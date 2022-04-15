@@ -1,0 +1,25 @@
+{
+  "name": "k8s-yaml-alternative",
+  "version": "1.0.0",
+  "description": "This repo demonstrates how to use TypeScript to define services in your Kubernetes cluster.",
+  "main": "index.ts",
+  "scripts": {
+    "start": "ts-node index.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nabsul/k8s-yaml-alternative.git"
+  },
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/nabsul/k8s-yaml-alternative/issues"
+  },
+  "homepage": "https://github.com/nabsul/k8s-yaml-alternative#readme",
+  "dependencies": {
+    "@kubernetes/client-node": "^0.16.3",
+    "@types/node": "^17.0.24",
+    "handlebars": "^4.7.7",
+    "ts-node": "^10.7.0"
+  }
+}

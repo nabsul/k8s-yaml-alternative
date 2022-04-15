@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service1
+  namespace: k8s-ts-test
+  labels:
+    app: service1
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: service1
+  template:
+    metadata:
+      labels:
+        app: service1
+    spec:
+      containers:
+      - name: service1
+        image: nginx:latest
+        ports:
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service1
+  namespace: k8s-ts-test
+  labels:
+    app: k8s-ts-test
+spec:
+  ports:
+    - name: port80
+      port: 80
+  selector:
+    app: service1
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service2
+  namespace: k8s-ts-test
+  labels:
+    app: service2
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service2
+  template:
+    metadata:
+      labels:
+        app: service2
+    spec:
+      containers:
+      - name: service2
+        image: nats
+        ports:
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service2
+  namespace: k8s-ts-test
+  labels:
+    app: k8s-ts-test
+spec:
+  ports:
+    - name: port4222
+      port: 4222
+    - name: port8222
+      port: 8222
+  selector:
+    app: service2

@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{name}}
+  namespace: {{namespace}}
+  labels:
+    app: {{namespace}}
+spec:
+  ports:
+  {{#each ports}}
+    - name: port{{this}}
+      port: {{this}}
+  {{/each}}
+  selector:
+    app: {{name}}
