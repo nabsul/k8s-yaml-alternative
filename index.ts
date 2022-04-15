@@ -5,10 +5,10 @@ const command = process.argv[2]
 
 const getCommand = () => {
     switch (command) {
-        case 'deploy':
-            return deployServices
         case 'yaml':
             return async () => getYaml(process.argv[3])
+        case 'deploy':
+            return deployServices
     }
 }
 

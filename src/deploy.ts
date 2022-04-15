@@ -35,7 +35,7 @@ export const deployService = async (svc: MyService) => {
     await func(deployment)
 
     if ((svc.ports || []).length > 0) {
-        console.log(`Creating Kubernetes service for [${getName(svc)}]`)
+        console.log(`Creating Kubernetes service for ${getName(svc)}`)
         const service = k8sService(svc)
         if (await serviceExists(svc)) {
             await replaceService(service)
