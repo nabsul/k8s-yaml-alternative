@@ -1,24 +1,12 @@
-import { deployService } from "./src/deploy"
-import { getAllServices, namespace } from "./src/my-services"
-import { createNamespaceIfNotExist } from "./src/namespace"
+import { deployServices } from "./src/deploy"
 import { getYaml } from "./src/yaml"
-
-const deploy = async () => {
-    await createNamespaceIfNotExist(namespace)
-
-    for (var s of getAllServices()) {
-        await deployService(s)
-    }
-
-    console.log(`Deployment complete`)
-}
 
 const command = process.argv[2]
 
 const getCommand = () => {
     switch (command) {
         case 'deploy':
-            return deploy    
+            return deployServices
         case 'yaml':
             return async () => getYaml(process.argv[3])
     }

@@ -1,5 +1,7 @@
 import { createDeployment, createService, deploymentExists, replaceDeployment, replaceService, serviceExists } from "./k8s-client";
 import { k8sDeployment, k8sService } from "./k8s-objects";
+import { getAllServices, namespace } from "./my-services";
+import { createNamespaceIfNotExist } from "./namespace";
 import { MyService } from "./types";
 import { getUserConfirmation } from "./util";
 
@@ -7,6 +9,15 @@ const getName = (svc: MyService): string => {
     return `[${svc.name}] in namespace [${svc.namespace}]`
 }
 
+export const deployServices = async () => {
+    await createNamespaceIfNotExist(namespace)
+
+    for (var s of getAllServices()) {
+        await deployService(s)
+    }
+
+    console.log(`Deployment complete`)
+}
 
 export const deployService = async (svc: MyService) => {
     console.log(`Preparing to deploy ${getName(svc)}`)
