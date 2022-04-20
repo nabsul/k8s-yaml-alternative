@@ -23,3 +23,15 @@ spec:
         - containerPort: {{port}}
           name: port{{port}}
         {{/each}}
+        env:
+        {{#each env}}
+        - name: {{@key}}
+        {{#if vaultSecret}}
+          valueFrom:
+            secretKeyRef:
+              name: {{../name}}-secret
+              key: {{vaultSecret}}
+        {{else}}
+          value: '{{this}}'
+        {{/if}}
+        {{/each}}

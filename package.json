@@ -4,7 +4,8 @@
   "description": "This repo demonstrates how to use TypeScript to define services in your Kubernetes cluster.",
   "main": "index.ts",
   "scripts": {
-    "start": "ts-node index.ts"
+    "deploy": "ts-node deploy.ts",
+    "generate": "ts-node generate.ts"
   },
   "repository": {
     "type": "git",

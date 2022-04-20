@@ -19,6 +19,7 @@ spec:
       - name: service1
         image: nginx:latest
         ports:
+        env:
 ---
 apiVersion: v1
 kind: Service
@@ -55,6 +56,7 @@ spec:
       - name: service2
         image: nats
         ports:
+        env:
 ---
 apiVersion: v1
 kind: Service
@@ -71,3 +73,33 @@ spec:
       port: 8222
   selector:
     app: service2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: service3
+  namespace: k8s-ts-test
+  labels:
+    app: service3
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: service3
+  template:
+    metadata:
+      labels:
+        app: service3
+    spec:
+      containers:
+      - name: service3
+        image: nats
+        ports:
+        env:
+        - name: REGULAR_VAR
+          value: 'Some Value'
+        - name: SECRET_VAR
+          valueFrom:
+            secretKeyRef:
+              name: service3-secret
+              key: vault-secret-name
