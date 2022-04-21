@@ -1,15 +1,19 @@
 import { namespace, services } from "./my-services"
-import { deployService } from "./src/deploy"
-import { createNamespaceIfNotExist } from "./src/k8s-client"
+import { getName, makeDeployment, makeNamespace, makeSecret, makeService } from "./src/k8s-client"
 
 export const deployServices = async () => {
-    await createNamespaceIfNotExist(namespace)
+    await makeNamespace(namespace)
+    console.log('')
 
     for (var [n, s] of Object.entries(services)) {
-        await deployService(namespace, n, s)
+        console.log(`Deploying ${getName(namespace, n)} started`)
+        await makeSecret(namespace, n, s)
+        await makeDeployment(namespace, n, s)
+        await makeService(namespace, n, s)
+        console.log(`Deploying ${getName(namespace, n)} complete\n`)
     }
 
-    console.log(`Deployment complete`)
+    console.log(`Deployments complete`)
 }
 
 deployServices().catch(console.log)

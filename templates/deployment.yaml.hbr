@@ -18,11 +18,14 @@ spec:
       containers:
       - name: {{name}}
         image: {{image}}
+        {{#if ports}}
         ports:
-        {{#each port}}
-        - containerPort: {{port}}
-          name: port{{port}}
+        {{#each ports}}
+        - containerPort: {{this}}
+          name: port{{this}}
         {{/each}}
+        {{/if}}
+        {{#if env}}
         env:
         {{#each env}}
         - name: {{@key}}
@@ -35,3 +38,4 @@ spec:
           value: '{{this}}'
         {{/if}}
         {{/each}}
+        {{/if}}

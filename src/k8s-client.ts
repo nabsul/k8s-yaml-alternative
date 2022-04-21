@@ -1,4 +1,6 @@
-import { AppsV1Api, CoreV1Api, KubeConfig, V1Deployment, V1Namespace, V1SeccompProfile, V1Secret, V1Service } from "@kubernetes/client-node";
+import { AppsV1Api, CoreV1Api, KubeConfig, V1Namespace } from "@kubernetes/client-node";
+import { k8sDeployment, k8sSecret, k8sService } from "./k8s-objects";
+import { MyService } from "./types";
 
 const cfg = new KubeConfig()
 cfg.loadFromDefault()
@@ -6,59 +8,82 @@ cfg.loadFromDefault()
 const coreClient = cfg.makeApiClient(CoreV1Api)
 const appClient = cfg.makeApiClient(AppsV1Api)
 
-const checkExists = async (func: () => Promise<any>) => {
+export const getName = (ns: string, n: string) => `[${ns}] - [${n}]`
+
+const wrapGet = async <T>(p: Promise<T>): Promise<T | null> => {
     try {
-        await func()
-        return true
+        return await p
     } catch (err: any) {
         if (err.statusCode !== 404) {
             throw err
         }
     }
 
-    return false
+    return null
 }
 
-export const namespaceExists = (ns: string) => checkExists(() => coreClient.readNamespace(ns))
-export const deploymentExists = (ns: string, name: string) => checkExists(() => appClient.readNamespacedDeployment(name, ns))
-export const serviceExists = (ns: string, name: string) => checkExists(() => coreClient.readNamespacedService(name, ns))
-export const secretExists = (ns: string, name: string) => checkExists(() => coreClient.readNamespacedSecret(name, ns))
-
-export const createNamespace = (ns: string) => {
-    const namespace: V1Namespace = {
-        metadata: {
-            name: ns
-        }
-    }
+export const makeDeployment = async (namespace: string, name: string, svc: MyService) => {
+    const d = k8sDeployment(namespace, name, svc)
+    if (null !== await wrapGet(appClient.readNamespacedDeployment(name, namespace))) {
+        await appClient.replaceNamespacedDeployment(name, namespace, d)
+        console.log(`Deployment ${getName(namespace, name)} updated`)
+        return
+    } 
     
-    return coreClient.createNamespace(namespace)
+    await appClient.createNamespacedDeployment(namespace, d)
+    console.log(`Deployment ${getName(namespace, name)} created`)
 }
 
-export const createDeployment = (d: V1Deployment) => {
-    return appClient.createNamespacedDeployment(d?.metadata?.namespace!, d)
+export const makeService = async (namespace: string, name: string, svc: MyService) => {
+    if (!svc.ports || svc.ports.length === 0) {
+        console.log(`Service ${getName(namespace, name)} is not needed`)
+        return
+    }
+
+    const s = k8sService(namespace, name, svc)
+    const service = await wrapGet(coreClient.readNamespacedService(name, namespace))
+    if (null !== service) {
+        s!.metadata!.resourceVersion = service.body.metadata!.resourceVersion!
+        await coreClient.replaceNamespacedService(name, namespace, s)
+        console.log(`Service ${getName(namespace, name)} updated`)
+        return
+    } 
+    
+    await coreClient.createNamespacedService(namespace, s)
+    console.log(`Service ${getName(namespace, name)} created`)
 }
 
-export const replaceDeployment = (d: V1Deployment) => {
-    return appClient.replaceNamespacedDeployment(d?.metadata?.name!, d?.metadata?.namespace!, d)
-}
-
-export const createService = (s: V1Service) => {
-    return coreClient.createNamespacedService(s?.metadata?.namespace!, s)
-}
-
-export const replaceService = (s: V1Service) => {
-    return coreClient.replaceNamespacedService(s?.metadata?.name!, s?.metadata?.namespace!, s)
-}
-
-export const createNamespaceIfNotExist = async (ns: string) => {
-    if (await namespaceExists(ns)) {
+export const makeNamespace = async (ns: string) => {
+    if (null !== await wrapGet(coreClient.readNamespace(ns))) {
         console.log(`Namespace ${ns} already exists.`)
         return
     }
 
-    await createNamespace(ns)
+    const namespace: V1Namespace = { metadata: { name: ns } }
+    await coreClient.createNamespace(namespace)
     console.log(`Namespace ${ns} created.`)
 }
 
-export const createSecret = (s: V1Secret) => coreClient.createNamespacedSecret(s?.metadata?.namespace!, s)
-export const replaceSecret = (s: V1Secret) => coreClient.replaceNamespacedSecret(s?.metadata?.name!, s?.metadata?.namespace!, s)
+export const makeSecret = async (namespace: string, name: string, svc: MyService) => {
+    const secretData: {[key: string]: string} = {}
+    for (const [k, v] of Object.entries(svc.env || {})) {
+        if (typeof v !== 'string') {
+            secretData[k] = v.vaultSecret
+        }
+    }
+
+    // check if a secret needs to be created
+    if (Object.values(secretData).length === 0) {
+        return
+    }
+
+    const s = k8sSecret(namespace, name, secretData)
+    if (null !== await wrapGet(coreClient.readNamespacedSecret(name, namespace))) {
+        await coreClient.replaceNamespacedSecret(name, namespace, s)
+        console.log(`Secret ${getName(namespace, name)} updated`)
+        return
+    } 
+    
+    await coreClient.createNamespacedSecret(namespace, s)
+    console.log(`Secret ${getName(namespace, name)} created`)
+}

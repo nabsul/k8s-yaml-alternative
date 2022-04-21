@@ -1,21 +1,16 @@
 import { V1Container, V1Deployment, V1EnvVar, V1Secret, V1Service } from "@kubernetes/client-node"
-import { namespace } from "../my-services"
 import { EnvVal, MyService } from "./types"
 
 export const k8sDeployment = (namespace: string, name: string, svc: MyService): V1Deployment => {
-    const metadata = { name, namespace }
-
     const container: V1Container = {
         name,
         image: svc.image,
-        ports: (svc.ports || []).map(p => ({
-            containerPort: p,
-        })),
+        ports: (svc.ports || []).map(p => ({ containerPort: p })),
         env: Object.entries(svc.env || {}).map(([n,e]) => createEnvVar(name, n, e))
     }
 
     return {
-        metadata,
+        metadata: { name, namespace },
         spec: {
             selector: { matchLabels: { app: name } },
             replicas: svc.replicas,
@@ -29,7 +24,7 @@ export const k8sDeployment = (namespace: string, name: string, svc: MyService): 
 
 export const k8sService = (namespace: string, name: string, svc: MyService): V1Service => {
     return {
-        metadata: {name, namespace},
+        metadata: { name, namespace },
         spec: {
             ports: (svc.ports || []).map(p => ({
                 port: p,
@@ -42,14 +37,14 @@ export const k8sService = (namespace: string, name: string, svc: MyService): V1S
 export const k8sSecret = (namespace: string, name: string, values: {[key: string]: string}): V1Secret => {
     const data: {[key: string]: string} = {}
     for (const [k, v] of Object.entries(values)) {
-        data[k] = btoa(v)
+        data[k] = Buffer.from(v).toString('base64')
     }
-    return { metadata: {name, namespace}, type: 'Opaque', data}
+    return { metadata: { name, namespace }, type: 'Opaque', data }
 }
 
 const createEnvVar = (svcName: string, name: string, val: EnvVal): V1EnvVar => {
     if (typeof val == 'string') {
-        return {name, value: val}
+        return { name, value: val }
     }
 
     return {

@@ -1,3 +1,4 @@
+# This file is generated using the generate.ts script
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -19,7 +20,8 @@ spec:
       - name: service1
         image: nginx:latest
         ports:
-        env:
+        - containerPort: 80
+          name: port80
 ---
 apiVersion: v1
 kind: Service
@@ -56,7 +58,10 @@ spec:
       - name: service2
         image: nats
         ports:
-        env:
+        - containerPort: 4222
+          name: port4222
+        - containerPort: 8222
+          name: port8222
 ---
 apiVersion: v1
 kind: Service
@@ -73,6 +78,15 @@ spec:
       port: 8222
   selector:
     app: service2
+---
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: service3-secret
+  namespace: k8s-ts-test
+data:
+  SECRET_VAR: dmF1bHQtc2VjcmV0LW5hbWU=
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -94,7 +108,6 @@ spec:
       containers:
       - name: service3
         image: nats
-        ports:
         env:
         - name: REGULAR_VAR
           value: 'Some Value'
