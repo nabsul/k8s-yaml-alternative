@@ -9,12 +9,12 @@ export const services: {[key: string]: MyService} = {
         ports: [80]
     },
     service2: {
-        image: 'nats',
+        image: 'nats:latest',
         replicas: 1,
         ports: [4222, 8222]
     },
     service3: {
-        image: 'nats',
+        image: 'app:latest',
         replicas: 1,
         env: {
             REGULAR_VAR: 'Some Value',

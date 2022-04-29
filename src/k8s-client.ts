@@ -68,7 +68,7 @@ export const makeSecret = async (namespace: string, name: string, svc: MyService
     const secretData: {[key: string]: string} = {}
     for (const [k, v] of Object.entries(svc.env || {})) {
         if (typeof v !== 'string') {
-            secretData[k] = v.vaultSecret
+            secretData[k] = v.vaultSecret // This would be replaced with logic that fetch the secret from a vault.
         }
     }
 
