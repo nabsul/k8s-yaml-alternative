@@ -34,14 +34,6 @@ export const k8sService = (namespace: string, name: string, svc: MyService): V1S
     }
 }
 
-export const k8sSecret = (namespace: string, name: string, values: {[key: string]: string}): V1Secret => {
-    const data: {[key: string]: string} = {}
-    for (const [k, v] of Object.entries(values)) {
-        data[k] = Buffer.from(v).toString('base64')
-    }
-    return { metadata: { name, namespace }, type: 'Opaque', data }
-}
-
 const createEnvVar = (svcName: string, name: string, val: EnvVal): V1EnvVar => {
     if (typeof val == 'string') {
         return { name, value: val }

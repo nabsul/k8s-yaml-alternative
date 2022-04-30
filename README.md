@@ -24,7 +24,7 @@ Then, check out this code and run `npm install`
 
 ## The YAML Approach
 
-- Generate your yaml file with `npm run generate generated.yaml`.
+- Generate your yaml file with `npm run generate`.
 - Create the empty namespace with `kubectl create namespace k8s-ts-test`
 - Apply the yaml with `kubectl apply -f generated.yaml`
 

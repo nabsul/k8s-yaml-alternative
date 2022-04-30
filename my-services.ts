@@ -14,11 +14,11 @@ export const services: {[key: string]: MyService} = {
         ports: [4222, 8222]
     },
     service3: {
-        image: 'app:latest',
+        image: 'nginx:latest',
         replicas: 1,
         env: {
-            REGULAR_VAR: 'Some Value',
-            SECRET_VAR: { vaultSecret: 'vault-secret-name' }
+            VAR1: 'Some Value',
+            VAR2: 'another value',
         }
     }
 }

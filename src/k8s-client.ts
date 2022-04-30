@@ -1,5 +1,5 @@
 import { AppsV1Api, CoreV1Api, KubeConfig, V1Namespace } from "@kubernetes/client-node";
-import { k8sDeployment, k8sSecret, k8sService } from "./k8s-objects";
+import { k8sDeployment, k8sService } from "./k8s-objects";
 import { MyService } from "./types";
 
 const cfg = new KubeConfig()
@@ -62,28 +62,4 @@ export const makeNamespace = async (ns: string) => {
     const namespace: V1Namespace = { metadata: { name: ns } }
     await coreClient.createNamespace(namespace)
     console.log(`Namespace ${ns} created.`)
-}
-
-export const makeSecret = async (namespace: string, name: string, svc: MyService) => {
-    const secretData: {[key: string]: string} = {}
-    for (const [k, v] of Object.entries(svc.env || {})) {
-        if (typeof v !== 'string') {
-            secretData[k] = v.vaultSecret // This would be replaced with logic that fetch the secret from a vault.
-        }
-    }
-
-    // check if a secret needs to be created
-    if (Object.values(secretData).length === 0) {
-        return
-    }
-
-    const s = k8sSecret(namespace, name, secretData)
-    if (null !== await wrapGet(coreClient.readNamespacedSecret(name, namespace))) {
-        await coreClient.replaceNamespacedSecret(name, namespace, s)
-        console.log(`Secret ${getName(namespace, name)} updated`)
-        return
-    } 
-    
-    await coreClient.createNamespacedSecret(namespace, s)
-    console.log(`Secret ${getName(namespace, name)} created`)
 }
