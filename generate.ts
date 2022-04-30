@@ -16,7 +16,6 @@ for (const [name, svc] of Object.entries(services)) {
     }
 
     if (Object.values(secretData).length > 0) {
-        console.log(secretData)
         results.push(secTpl({name, namespace, data: secretData}))
     }
 

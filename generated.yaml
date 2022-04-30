@@ -56,7 +56,7 @@ spec:
     spec:
       containers:
       - name: service2
-        image: nats
+        image: nats:latest
         ports:
         - containerPort: 4222
           name: port4222
@@ -107,7 +107,7 @@ spec:
     spec:
       containers:
       - name: service3
-        image: nats
+        image: app:latest
         env:
         - name: REGULAR_VAR
           value: 'Some Value'
